@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Infinite scroll</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      .item {
+        width: 100%;
+        height: 90px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <div id="load-more">
+      <span>Loading.....</span>
+    </div>
+    <script>
+      var state = {
+        page: 0,
+        pageSize: 10,
+        prevY: 0,
+      };
+
+      function setState(shapeOfState) {
+        this.state = {
+          ...this.state,
+          ...shapeOfState,
+        };
+      }
+
+      window.addEventListener('load', function () {
+        const root = document.getElementById('root');
+        const loadMoreSection = document.getElementById('load-more');
+
+        function generateItems(page = 0, pageSize = 10) {
+          return new Array(pageSize).fill('').map((_, index) => {
+            const id = page * pageSize + (index + 1);
+            return `Paragraph id: ${id}`;
+          });
+        }
+
+        function fetchItems(page = 0, pageSize = 10) {
+          return new Promise((resolve) =>
+            setTimeout(() => {
+              resolve(generateItems(page, pageSize));
+            }, 3000),
+          );
+        }
+
+        function createObserver() {
+          const options = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 1,
+          };
+
+          const observer = new IntersectionObserver(
+            handleIntersect.bind(window),
+            options,
+          );
+          return observer;
+        }
+
+        function handleIntersect(entries, observer) {
+          const y = entries[0].boundingClientRect.y;
+          if (this.state.prevY > y) {
+            const { page, pageSize } = this.state;
+            const nextPage = page + 1;
+
+            this.setState({ page: nextPage });
+            loadMore(nextPage, pageSize, root);
+          }
+          this.setState({ prevY: y });
+        }
+
+        function loadMore(page, pageSize, container) {
+          fetchItems(page, pageSize).then((items) => {
+            items.forEach((item) => {
+              const p = document.createElement('p');
+              p.innerHTML = item;
+              p.classList.add('item');
+              container.appendChild(p);
+            });
+          });
+        }
+
+        const { page, pageSize } = this.state;
+        loadMore(page, pageSize, root);
+
+        const observer = createObserver();
+        observer.observe(loadMoreSection);
+      });
+    </script>
+  </body>
+</html>
+
+<!-- Reference: https://scotch.io/tutorials/infinite-scroll-in-react-using-intersection-observer -->
