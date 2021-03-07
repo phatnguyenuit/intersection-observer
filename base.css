@@ -1,0 +1,9 @@
+* {
+  box-sizing: border-box;
+}
+
+#fork-me {
+  position: fixed;
+  right: 4px;
+  top: 4px;
+}
