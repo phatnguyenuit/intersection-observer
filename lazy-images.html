@@ -1,95 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lazy load images</title>
-    <style>
-      * {
-        box-sizing: border-box;
-      }
 
-      #root {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 32px;
-        justify-content: center;
-        align-items: center;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lazy load images</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-      .image-container > .lazy-image {
-        width: 100%;
-        height: auto;
-      }
-    </style>
-  </head>
+    #root {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 32px;
+      justify-content: center;
+      align-items: center;
+    }
 
-  <body>
-    <div id="root"></div>
-    <script>
-      function generateFakeImages(size) {
-        return new Array(size).fill('').map((_, index) => {
-          const id = index + 1;
-          const src = `./placeholder-200x200.png`;
-          const image = document.createElement('img');
+    .image-container>.lazy-image {
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
 
-          image.src = src;
-          image.dataset.src = `https://robohash.org/${id}?200x200`;
-          image.classList.add('lazy-image');
-          return image;
-        });
-      }
+<body>
+  <h1>Lazy loading images</h1>
+  <p>
+    Try to resize browser window to see how does it work
+  </p>
+  <p>
+    <a href="..">Go back!</a>
+  </p>
+  <div id="root"></div>
+  <script>
+    function generateFakeImages(size) {
+      return new Array(size).fill('').map((_, index) => {
+        const id = index + 1;
+        const src = `./placeholder-200x200.png`;
+        const image = document.createElement('img');
 
-      function loadImages(container) {
-        const fakeImages = generateFakeImages(10);
-        fakeImages.forEach((image) => {
-          const div = document.createElement('div');
-          div.classList.add('image-container');
-
-          div.appendChild(image);
-          container.appendChild(div);
-        });
-      }
-
-      function handleIntersect(entries, observer) {
-        console.log('handleIntersect');
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const lazyImage = entry.target;
-            lazyImage.src = lazyImage.dataset.src;
-
-            // unobserve lazyImage
-            observer.unobserve(lazyImage);
-          }
-        });
-      }
-
-      function createObserver() {
-        const options = {
-          root: null,
-          rootMargin: '0px',
-          threshold: 0.5,
-        };
-
-        const observer = new IntersectionObserver(handleIntersect, options);
-        return observer;
-      }
-
-      document.addEventListener('DOMContentLoaded', function () {
-        loadImages(document.getElementById('root'));
+        image.src = src;
+        image.dataset.src = `https://robohash.org/${id}?200x200`;
+        image.classList.add('lazy-image');
+        return image;
       });
+    }
 
-      window.addEventListener('load', function () {
-        const observer = createObserver();
-        Array.from(document.querySelectorAll('.lazy-image')).forEach(
-          (element) => {
-            observer.observe(element);
-          },
-        );
+    function loadImages(container) {
+      const fakeImages = generateFakeImages(10);
+      fakeImages.forEach((image) => {
+        const div = document.createElement('div');
+        div.classList.add('image-container');
+
+        div.appendChild(image);
+        container.appendChild(div);
       });
-    </script>
-  </body>
+    }
+
+    function handleIntersect(entries, observer) {
+      console.log('handleIntersect');
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const lazyImage = entry.target;
+          lazyImage.src = lazyImage.dataset.src;
+
+          // unobserve lazyImage
+          observer.unobserve(lazyImage);
+        }
+      });
+    }
+
+    function createObserver() {
+      const options = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.5,
+      };
+
+      const observer = new IntersectionObserver(handleIntersect, options);
+      return observer;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      loadImages(document.getElementById('root'));
+    });
+
+    window.addEventListener('load', function () {
+      const observer = createObserver();
+      Array.from(document.querySelectorAll('.lazy-image')).forEach(
+        (element) => {
+          observer.observe(element);
+        },
+      );
+    });
+  </script>
+</body>
+
 </html>
 
 <!-- Reference: https://blog.bitsrc.io/lazy-loading-images-using-the-intersection-observer-api-5a913ee226d -->
