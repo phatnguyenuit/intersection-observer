@@ -6,6 +6,7 @@ var state = {
 
 function setState(shapeOfState) {
   this.state = {
+    // @ts-ignore
     ...this.state,
     ...shapeOfState,
   };
@@ -48,28 +49,26 @@ function createObserver(callback) {
   return observer;
 }
 
-function handleIntersect(entries) {
-  const y = entries[0].boundingClientRect.y;
-  if (this.state.prevY > y) {
-    const { page, pageSize } = this.state;
-    const nextPage = page + 1;
-
-    this.setState({
-      page: nextPage,
-    });
-    loadMore(nextPage, pageSize, root);
-  }
-  this.setState({
-    prevY: y,
-  });
-}
-
 window.addEventListener('load', function () {
   const root = document.getElementById('root');
   const loadMoreSection = document.getElementById('load-more');
   const dots = document.getElementById('dots');
 
-  const observer = createObserver(handleIntersect);
+  const observer = createObserver(function (entries) {
+    const y = entries[0].boundingClientRect.y;
+    if (this.state.prevY > y) {
+      const { page, pageSize } = this.state;
+      const nextPage = page + 1;
+
+      this.setState({
+        page: nextPage,
+      });
+      loadMore(nextPage, pageSize, root);
+    }
+    this.setState({
+      prevY: y,
+    });
+  });
   observer.observe(loadMoreSection);
 
   const { page, pageSize } = this.state;
